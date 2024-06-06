@@ -1,1 +1,3 @@
-# 2024-05-otus-spring-kudryashov
+Курс OTUS Spring-2024-05
+Кудряшов Иван Игоревич
+
