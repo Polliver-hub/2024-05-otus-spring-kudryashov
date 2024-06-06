@@ -1,3 +1,2 @@
-## Курс OTUS Spring-2024-05<br>
-## Кудряшов Иван Игоревич
+## Курс OTUS Spring-2024-05-kudryashov<br>
 
