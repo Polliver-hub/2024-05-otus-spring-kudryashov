@@ -24,23 +24,37 @@ public class TestServiceImpl implements TestService {
         TestResult testResult = new TestResult(student);
 
         for (Question question : questions) {
-            boolean isAnswerValid = false;
-            String isTrueAnswer = "";
-            ioService.printLine(question.text());
-            for (Answer answer : question.answers()) {
-                ioService.printLine(answer.text());
-                if (answer.isCorrect()) {
-                    isTrueAnswer = answer.text();
-                }
-            }
-            String answerResult = ioService.readStringWithPrompt(
-                    "Select an answer option from the suggested ones." +
-                            " The answer must be in string form and strictly repeat the proposed option:");
-            if (answerResult.equals(isTrueAnswer)) {
-                isAnswerValid = true;
-            }
-            testResult.applyAnswer(question, isAnswerValid);
+            testOnOneQuestion(question, testResult);
         }
         return testResult;
     }
+
+    private void testOnOneQuestion(Question question, TestResult result) {
+        result.applyAnswer(question, getTheAnswerAndCheckTheCorrect(
+                printQuestionWithAnswersAndReturnCorrectAnswer(question)));
+    }
+
+    private String printQuestionWithAnswersAndReturnCorrectAnswer(Question question) {
+        String isTrueAnswer = "";
+        ioService.printLine(question.text());
+        for (Answer answer : question.answers()) {
+            ioService.printLine(answer.text());
+            if (answer.isCorrect()) {
+                isTrueAnswer = answer.text();
+            }
+        }
+        return isTrueAnswer;
+    }
+
+    private boolean getTheAnswerAndCheckTheCorrect(String answer) {
+        boolean isAnswerCorrect = false;
+        String answerResult = ioService.readStringWithPrompt(
+                "Select an answer option from the suggested ones." +
+                        " The answer must be in string form and strictly repeat the proposed option:");
+        if (answerResult.equals(answer)) {
+            isAnswerCorrect = true;
+        }
+        return isAnswerCorrect;
+    }
+
 }
