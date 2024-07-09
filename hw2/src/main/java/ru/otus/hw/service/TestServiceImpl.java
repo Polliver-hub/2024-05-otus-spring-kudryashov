@@ -12,6 +12,12 @@ import ru.otus.hw.domain.TestResult;
 @RequiredArgsConstructor
 public class TestServiceImpl implements TestService {
 
+    private static final int MIN_TEST_ANSWER = 1;
+    private static final String ERROR_MESSAGE_WHEN_ANSWER = "Try again!";
+    private static final String PROMPT = "Select an answer option from the suggested ones. " +
+            "the answer must be an integer in the range from " + MIN_TEST_ANSWER + " to %s :";
+
+
     private final IOService ioService;
 
     private final QuestionDao questionDao;
@@ -30,31 +36,37 @@ public class TestServiceImpl implements TestService {
     }
 
     private void testOnOneQuestion(Question question, TestResult result) {
-        result.applyAnswer(question, getTheAnswerAndCheckTheCorrect(
-                printQuestionWithAnswersAndReturnCorrectAnswer(question)));
+        int answer = printQuestionWithAnswersAndReturnCorrectAnswer(question);
+        boolean resultTest = getTheAnswerAndCheckTheCorrect(answer, checkTheNumberOfAnswersInQuestion(question));
+        result.applyAnswer(question, resultTest);
     }
 
-    private String printQuestionWithAnswersAndReturnCorrectAnswer(Question question) {
-        String isTrueAnswer = "";
+    private int printQuestionWithAnswersAndReturnCorrectAnswer(Question question) {
+        int isTrueAnswer = 0;
+        int count = 1;
         ioService.printLine(question.text());
         for (Answer answer : question.answers()) {
-            ioService.printLine(answer.text());
+            ioService.printLine(count + ". " + answer.text());
             if (answer.isCorrect()) {
-                isTrueAnswer = answer.text();
+                isTrueAnswer = count;
             }
+            count++;
         }
         return isTrueAnswer;
     }
 
-    private boolean getTheAnswerAndCheckTheCorrect(String answer) {
+    private boolean getTheAnswerAndCheckTheCorrect(int answer, int numberOfAnswersInQuestion) {
         boolean isAnswerCorrect = false;
-        String answerResult = ioService.readStringWithPrompt(
-                "Select an answer option from the suggested ones." +
-                        " The answer must be in string form and strictly repeat the proposed option:");
-        if (answerResult.equals(answer)) {
+        String formattedPrompt = String.format(PROMPT, numberOfAnswersInQuestion);
+        int answerResult = ioService.readIntForRangeWithPrompt(MIN_TEST_ANSWER, numberOfAnswersInQuestion, formattedPrompt, ERROR_MESSAGE_WHEN_ANSWER);
+        if (answerResult == answer) {
             isAnswerCorrect = true;
         }
         return isAnswerCorrect;
+    }
+
+    private int checkTheNumberOfAnswersInQuestion(Question question) {
+        return question.answers().size();
     }
 
 }
