@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.config.TestFileNameProvider;
+import ru.otus.hw.config.annotations.Profiling;
 import ru.otus.hw.dao.dto.QuestionDto;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.exceptions.QuestionReadException;
@@ -19,6 +20,7 @@ public class CsvQuestionDao implements QuestionDao {
 
     private final TestFileNameProvider fileNameProvider;
 
+    @Profiling
     @Override
     public List<Question> findAll() {
         try (InputStream inputStream = new ClassPathResource(fileNameProvider.getTestFileName()).getInputStream();

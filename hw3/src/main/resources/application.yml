@@ -14,3 +14,7 @@ test:
 application:
   name: Tests for Students!
   version: v0.01
+logging:
+  level:
+    root: INFO
+    ru.otus.hw: INFO
