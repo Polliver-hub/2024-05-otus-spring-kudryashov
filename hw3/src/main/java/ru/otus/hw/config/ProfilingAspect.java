@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ProfilingAspect {
 
-    @Around("@annotation(ru.otus.hw.config.annotations.Profiling)")
+    @Around("@annotation(ru.otus.hw.config.annotations.Profiled)")
     public Object logBefore(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         try {
