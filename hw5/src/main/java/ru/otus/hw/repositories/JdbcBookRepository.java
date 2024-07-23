@@ -37,8 +37,8 @@ public class JdbcBookRepository implements BookRepository {
                     queryForObject("SELECT b.ID, b.TITLE, b.author_id, b.genre_id, " +
                                     "a.FULL_NAME AS author_name, g.name AS genre_name " +
                                     "FROM BOOKS b " +
-                                    "JOIN AUTHORS a ON b.author_id = a.id " +
-                                    "JOIN GENRES g ON b.genre_id = g.id " +
+                                    "LEFT JOIN AUTHORS a ON b.author_id = a.id " +
+                                    "LEFT JOIN GENRES g ON b.genre_id = g.id " +
                                     "WHERE b.id = :id",
                             Map.of("id", id), new BookRowMapper());
 
@@ -53,8 +53,8 @@ public class JdbcBookRepository implements BookRepository {
         return jdbc.query("SELECT b.ID, b.TITLE, b.author_id, b.genre_id, " +
                         "a.FULL_NAME AS author_name, g.name AS genre_name " +
                         "FROM BOOKS b " +
-                        "JOIN AUTHORS a ON b.author_id = a.id " +
-                        "JOIN GENRES g ON b.genre_id = g.id",
+                        "LEFT JOIN AUTHORS a ON b.author_id = a.id " +
+                        "LEFT JOIN GENRES g ON b.genre_id = g.id",
                 new BookRowMapper());
     }
 
