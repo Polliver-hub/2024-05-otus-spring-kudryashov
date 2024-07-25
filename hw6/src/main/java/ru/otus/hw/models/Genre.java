@@ -11,7 +11,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -20,6 +22,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "genres")
+@ToString(exclude = "books")
+@EqualsAndHashCode(exclude = "books")
 public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -11,13 +11,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "comments")
+@ToString(exclude = "book")
+@EqualsAndHashCode(exclude = "book")
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

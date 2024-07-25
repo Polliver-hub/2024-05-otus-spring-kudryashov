@@ -23,7 +23,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "books")
-@ToString(exclude = "comments")
+@ToString(exclude = {"comments", "genre", "author"})
+@EqualsAndHashCode(exclude = {"comments", "genre", "author"})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +40,5 @@ public class Book {
     private Genre genre;
 
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @EqualsAndHashCode.Exclude
     private List<Comment> comments;
 }
