@@ -40,12 +40,6 @@
             <version>${spring.shell.version}</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>jakarta.persistence</groupId>-->
-<!--            <artifactId>jakarta.persistence-api</artifactId>-->
-<!--            <version>${jpa.version}</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
