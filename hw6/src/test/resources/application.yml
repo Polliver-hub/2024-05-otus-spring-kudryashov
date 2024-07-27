@@ -4,5 +4,10 @@ spring:
   sql:
     init:
       mode: always
-      data-locations: data.sql
       schema-locations: schema.sql
+      data-locations: data.sql
+  jpa:
+    generate-ddl: false
+    show-sql: true
+    hibernate:
+      ddl-auto: update

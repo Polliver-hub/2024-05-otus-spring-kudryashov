@@ -18,7 +18,14 @@ public class JpaBookRepository implements BookRepository {
 
     @Override
     public Optional<Book> findById(long id) {
-        return Optional.ofNullable(entityManager.find(Book.class, id));
+        var query = entityManager.createQuery(
+                "SELECT b FROM Book b " +
+                        "LEFT JOIN FETCH b.author " +
+                        "LEFT JOIN FETCH b.genre " +
+                        "WHERE b.id = :id",
+                Book.class);
+        query.setParameter("id", id);
+        return query.getResultStream().findAny();
     }
 
     @Override
@@ -26,9 +33,7 @@ public class JpaBookRepository implements BookRepository {
         TypedQuery<Book> query = entityManager.createQuery(
                 "SELECT b FROM Book b " +
                         "LEFT JOIN FETCH b.author " +
-                        "LEFT JOIN FETCH b.genre " +
-                        "LEFT JOIN FETCH b.comments " +
-                        "ORDER BY b.title",
+                        "LEFT JOIN FETCH b.genre ",
                 Book.class);
         return query.getResultList();
     }
