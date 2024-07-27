@@ -10,13 +10,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "books")
+@ToString(exclude = {"author", "genre"})
+@EqualsAndHashCode(exclude = {"author", "genre"})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
