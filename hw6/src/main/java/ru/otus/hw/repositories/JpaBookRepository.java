@@ -1,31 +1,33 @@
 package ru.otus.hw.repositories;
 
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.Book;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class JpaBookRepository implements BookRepository {
 
     @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Override
     public Optional<Book> findById(long id) {
-        var query = entityManager.createQuery(
-                "SELECT b FROM Book b " +
-                        "LEFT JOIN FETCH b.author " +
-                        "LEFT JOIN FETCH b.genre " +
-                        "WHERE b.id = :id",
-                Book.class);
-        query.setParameter("id", id);
-        return query.getResultStream().findAny();
+        EntityGraph<?> entityGraph = entityManager.
+                getEntityGraph("book-with-author-genre");
+        return Optional.ofNullable(entityManager.find(
+                Book.class,
+                id,
+                Map.of("jakarta.persistence.fetchgraph", entityGraph)));
     }
 
     @Override

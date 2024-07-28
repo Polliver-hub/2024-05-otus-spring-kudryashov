@@ -1,30 +1,38 @@
 package ru.otus.hw.repositories;
 
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.Comment;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class JpaCommentRepository implements CommentRepository {
 
     @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Override
     public Optional<Comment> findById(long id) {
-        return Optional.ofNullable(entityManager.find(Comment.class, id));
+        EntityGraph<?> entityGraph = entityManager.
+                getEntityGraph("comments-with-book");
+        return Optional.ofNullable(entityManager.find(
+                Comment.class,
+                id,
+                Map.of("jakarta.persistence.fetchgraph", entityGraph)));
     }
 
     @Override
     public List<Comment> findAllByBookId(long bookId) {
-        TypedQuery<Comment> query = entityManager.createQuery(
-                "SELECT c FROM Comment c LEFT JOIN FETCH c.book WHERE c.book.id = :bookId", Comment.class);
+        var query = entityManager.createQuery(
+                "SELECT c FROM Comment c WHERE c.book.id = :bookId", Comment.class);
         query.setParameter("bookId", bookId);
         return query.getResultList();
     }
