@@ -13,15 +13,13 @@ import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
-import ru.otus.hw.repositories.JpaBookRepository;
-import ru.otus.hw.repositories.JpaCommentRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Сервис для работы с комментариями должен")
 @DataJpaTest
 @Transactional(propagation = Propagation.NEVER)
-@Import({CommentServiceImpl.class, JpaBookRepository.class, JpaCommentRepository.class})
+@Import(CommentServiceImpl.class)
 @Sql(value = "/scriptBeforeTest.sql")
 class CommentServiceImplTest {
 
