@@ -51,6 +51,8 @@ class CommentServiceImplTest {
 
         assertThat(comment).isPresent().get().isEqualTo(commentForBookWithId1);
         assertThat(comment.get().getBook()).isEqualTo(bookById1);
+        assertThat(comment.get().getBook().getAuthor()).isEqualTo(bookById1.getAuthor());
+        assertThat(comment.get().getBook().getGenre()).isEqualTo(bookById1.getGenre());
     }
 
     @DisplayName("вернуть все комментарии для книги по ее id")

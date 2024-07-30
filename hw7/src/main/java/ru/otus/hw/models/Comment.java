@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,8 +25,14 @@ import lombok.ToString;
 @Table(name = "comments")
 @ToString(exclude = "book")
 @EqualsAndHashCode(exclude = "book")
-@NamedEntityGraph(name = "comments-with-book",
-        attributeNodes = @NamedAttributeNode("book"))
+@NamedEntityGraph(name = "comments-with-book-author-genre",
+        attributeNodes = @NamedAttributeNode(value = "book", subgraph = "author-genre-subgraph"),
+        subgraphs = @NamedSubgraph(name = "author-genre-subgraph",
+                attributeNodes = {
+                        @NamedAttributeNode("author"),
+                        @NamedAttributeNode("genre")
+                })
+)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
