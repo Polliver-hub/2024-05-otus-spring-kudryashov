@@ -20,42 +20,42 @@ public class CommentServiceImpl implements CommentService {
     private final BookRepository bookRepository;
 
     @Override
-    public Optional<Comment> findById(long id) {
+    public Optional<Comment> findById(String id) {
         return commentRepository.findById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Comment> findAllByBookId(long bookId) {
+    public List<Comment> findAllByBookId(String bookId) {
         bookRepository.findById(bookId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Book with id %d not found".formatted(bookId)));
+                        new EntityNotFoundException("Book with id %s not found".formatted(bookId)));
         return commentRepository.findAllByBookId(bookId);
     }
 
     @Override
     @Transactional
-    public Comment insert(String text, long bookId) {
-        return save(0, text, bookId);
-    }
-
-    @Override
-    @Transactional
-    public Comment update(long id, String text, long bookId) {
-        return save(id, text, bookId);
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(long id) {
-        commentRepository.deleteById(id);
-    }
-
-    private Comment save(long id, String text, long bookId) {
+    public Comment insert(String text, String bookId) {
         var book = bookRepository.findById(bookId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Author with id %d not found".formatted(bookId)));
+                        new EntityNotFoundException("Author with id %s not found".formatted(bookId)));
+        var comment = new Comment(text, book);
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    @Transactional
+    public Comment update(String id, String text, String bookId) {
+        var book = bookRepository.findById(bookId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Author with id %s not found".formatted(bookId)));
         var comment = new Comment(id, text, book);
         return commentRepository.save(comment);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(String id) {
+        commentRepository.deleteById(id);
     }
 }
