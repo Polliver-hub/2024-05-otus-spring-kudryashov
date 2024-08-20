@@ -40,17 +40,17 @@
             <version>${spring.shell.version}</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>de.flapdoodle.embed</groupId>-->
-<!--            <artifactId>de.flapdoodle.embed.mongo</artifactId>-->
-<!--            <version>${flapdoodle.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+            <version>${flapdoodle.version}</version>
+        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>de.flapdoodle.embed</groupId>-->
-<!--            <artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>-->
-<!--            <version>${flapdoodle.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
+            <version>${flapdoodle.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.github.cloudyrock.mongock</groupId>
