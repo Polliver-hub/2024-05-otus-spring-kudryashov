@@ -53,16 +53,20 @@ public class BookServiceImpl implements BookService {
         var genre = genreRepository.findById(genreId)
                 .orElseThrow(() -> new EntityNotFoundException("Genre with id %s not found".formatted(genreId)));
         var book = new Book(id, title, author, genre);
+        updateAllCommentsByUpdatedBook(book);
         return bookRepository.save(book);
     }
 
     @Override
     @Transactional
     public void deleteById(String id) {
-        Optional<Book> bookOptional = bookRepository.findById(id);
-        if (bookOptional.isPresent()) {
-            commentRepository.deleteAllByBookId(id);
-        }
+        commentRepository.deleteAllByBookId(id);
         bookRepository.deleteById(id);
+    }
+
+    private void updateAllCommentsByUpdatedBook(Book updatedBook) {
+        var comments = commentRepository.findAllByBookId(updatedBook.getId());
+        comments.forEach(comment -> comment.setBook(updatedBook));
+        commentRepository.saveAll(comments);
     }
 }

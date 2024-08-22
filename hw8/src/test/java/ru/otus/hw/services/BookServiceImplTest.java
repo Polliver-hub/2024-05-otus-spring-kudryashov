@@ -1,72 +1,61 @@
 package ru.otus.hw.services;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
+import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @DisplayName("Сервис для работы с книгами должен")
 @DataMongoTest
-@Import({BookServiceImpl.class, CommentServiceImpl.class})
+@Import(BookServiceImpl.class)
 class BookServiceImplTest {
-
-    private static final String ID_FIRST_BOOK = "1";
-    private static final int SIZE_OF_BOOKS_LIST = 3;
 
     @Autowired
     private BookService bookService;
 
     @Autowired
-    private CommentService commentService;
-
-    private Author author;
-
-    private Genre genre;
-
-    private Book firstBook;
-
-    @BeforeEach
-    void setUp() {
-        author = new Author("1", "Author_1");
-        genre = new Genre("1", "Genre_1");
-        firstBook = new Book("1", "BookTitle_1", author, genre);
-    }
+    MongoOperations mongoOperations;
 
     @DisplayName("вернуть книгу по ее id")
     @Test
     void findById() {
-        var book = bookService.findById(ID_FIRST_BOOK);
+        var firstBookFromDb = mongoOperations.findOne(new Query(), Book.class);
 
-        assertThat(book).isPresent().get().isEqualTo(firstBook);
+        var book = bookService.findById(firstBookFromDb.getId());
+
+        assertThat(book).isPresent().get().isEqualTo(firstBookFromDb);
     }
 
     @DisplayName("вернуть все книги")
     @Test
     void findAll() {
-        List<Book> allBooks = bookService.findAll();
+        var booksFromDb = mongoOperations.findAll(Book.class);
 
-        assertThat(allBooks.size()).isEqualTo(SIZE_OF_BOOKS_LIST);
-        assertThat(allBooks.get(0)).isEqualTo(firstBook);
+        var allBooks = bookService.findAll();
+
+        assertThat(allBooks).isEqualTo(booksFromDb);
     }
 
     @DisplayName("сохранить новую книгу")
     @Test
     @DirtiesContext
     void insert() {
-        var newBook = new Book("newId", "newBook", author, genre);
+        var author = new Author("1", "Author_1");
+        var genre = new Genre("1", "Genre_1");
+        var newBook = new Book(null, "newBook", author, genre);
+        var countBooksFromDbBeforeInsert = mongoOperations.count(new Query(), Book.class);
 
         var savedBook = bookService.insert(newBook.getTitle(),
                 newBook.getAuthor().getId(), newBook.getGenre().getId());
@@ -76,36 +65,52 @@ class BookServiceImplTest {
                 .usingRecursiveComparison()
                 .ignoringFields("id")
                 .isEqualTo(newBook);
-        var books = bookService.findAll();
-        assertThat(books.size()).isEqualTo(SIZE_OF_BOOKS_LIST + 1);
+
+        assertThat(mongoOperations.count(new Query(), Book.class))
+                .isEqualTo(countBooksFromDbBeforeInsert + 1);
     }
 
-    @DisplayName("сохранить обновленную книгу")
+    @DisplayName("сохранить обновленную книгу и связанные сущности(комменты)")
     @Test
     @DirtiesContext
     void update() {
-        var target = new Book("1", "newBook", author, genre);
+        var author = new Author("1", "Author_1");
+        var genre = new Genre("1", "Genre_1");
+        var firstBookFromDb = mongoOperations.findOne(new Query(), Book.class);
+        var target = new Book(firstBookFromDb.getId(), "updatedBook", author, genre);
+        var query = new Query().addCriteria(Criteria.where("book._id").is(firstBookFromDb.getId()));
+        var commentsBeforeUpdateBook = mongoOperations.find(query, Comment.class);
 
-        var updatedBook = bookService.update(ID_FIRST_BOOK, target.getTitle(),
+        var updatedBook = bookService.update(firstBookFromDb.getId(), target.getTitle(),
                 target.getAuthor().getId(), target.getGenre().getId());
 
-        assertThat(updatedBook)
-                .isNotNull()
-                .isEqualTo(target);
+        var commentsAfterUpdateBook = mongoOperations.find(query, Comment.class);
+
+        assertThat(updatedBook).isEqualTo(target);
+        assertThat(commentsBeforeUpdateBook).isNotEqualTo(commentsAfterUpdateBook);
+        assertThat(commentsBeforeUpdateBook)
+                .isNotEmpty()
+                .allMatch(comment -> comment.getBook().getTitle().equals(firstBookFromDb.getTitle()));
+        assertThat(commentsAfterUpdateBook)
+                .isNotEmpty()
+                .allMatch(comment -> comment.getBook().getTitle().equals("updatedBook"));
     }
 
     @DisplayName("удалить книгу по id а также все комменты связанные с ней")
     @Test
     @DirtiesContext
     void deleteById() {
-        assertThat(bookService.findById(ID_FIRST_BOOK)).isPresent();
-        assertThat(commentService.findAllByBookId(ID_FIRST_BOOK)).isNotEmpty();
+        var deletedBook = mongoOperations.findOne(new Query(), Book.class);
+        assertThat(deletedBook).isNotNull();
 
-        bookService.deleteById(ID_FIRST_BOOK);
+        var query = new Query().addCriteria(Criteria.where("book._id").is(deletedBook.getId()));
+        var commentsBeforeDeleteBook = mongoOperations.find(query, Comment.class);
+        assertThat(commentsBeforeDeleteBook).isNotEmpty();
 
-        assertThat(bookService.findById(ID_FIRST_BOOK)).isEmpty();
-        assertThrows(EntityNotFoundException.class, () -> {
-            commentService.findAllByBookId(ID_FIRST_BOOK);
-        });
+        bookService.deleteById(deletedBook.getId());
+        assertThat(mongoOperations.findById(deletedBook.getId(), Book.class)).isNull();
+
+        var commentsAfterDeleteBook = mongoOperations.find(query, Comment.class);
+        assertThat(commentsAfterDeleteBook).isEmpty();
     }
 }
