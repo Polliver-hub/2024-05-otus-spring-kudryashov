@@ -26,7 +26,7 @@ class BookServiceImplTest {
     private BookService bookService;
 
     @Autowired
-    MongoOperations mongoOperations;
+    private MongoOperations mongoOperations;
 
     @DisplayName("вернуть книгу по ее id")
     @Test
