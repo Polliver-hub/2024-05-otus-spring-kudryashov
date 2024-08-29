@@ -3,14 +3,15 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.mappers.BookMapper;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -21,28 +22,39 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
 
+    private final BookMapper bookMapper;
+
     @Override
     @Transactional(readOnly = true)
-    public Optional<Book> findById(long id) {
-        return bookRepository.findById(id);
+    public BookDto findById(long id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+        return bookMapper.toDto(book);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Book> findAll() {
-        return bookRepository.findAll();
+    public List<BookDto> findAll() {
+        var books = bookRepository.findAll();
+        return bookMapper.toListDto(books);
     }
 
     @Override
     @Transactional
-    public Book insert(String title, long authorId, long genreId) {
-        return save(0, title, authorId, genreId);
+    public BookDto insert(BookDto newBookDto) {
+        Book savedBook = save(0, newBookDto.getTitle(),
+                newBookDto.getAuthorDto().getId(),
+                newBookDto.getGenreDto().getId());
+        return bookMapper.toDto(savedBook);
     }
 
     @Override
     @Transactional
-    public Book update(long id, String title, long authorId, long genreId) {
-        return save(id, title, authorId, genreId);
+    public BookDto update(long id, BookDto updatedBookDto) {
+        Book updatedBook = save(id, updatedBookDto.getTitle(),
+                updatedBookDto.getAuthorDto().getId(),
+                updatedBookDto.getGenreDto().getId());
+        return bookMapper.toDto(updatedBook);
     }
 
     @Override
