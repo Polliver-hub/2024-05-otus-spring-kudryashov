@@ -25,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto findById(long id) {
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with id: %d - not found", id)));
         return commentMapper.toDto(comment);
     }
 

@@ -32,7 +32,7 @@ public class CommentController {
         model.addAttribute("comments", comments);
         model.addAttribute("bookId", bookId);
         model.addAttribute("title", title);
-        model.addAttribute("comment", new CommentDto()); // For adding new comment
+        model.addAttribute("comment", new CommentDto());
         return "comment/comments";
     }
 
