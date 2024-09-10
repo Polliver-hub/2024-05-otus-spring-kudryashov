@@ -28,3 +28,12 @@ create table comments
     book_id bigint references books (id) on delete cascade,
     primary key (id)
 );
+
+create table users
+(
+    id bigserial,
+    username varchar(255),
+    password varchar(255),
+    role varchar(255),
+    primary key (id)
+);
