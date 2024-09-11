@@ -5,11 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.GenreDto;
+import ru.otus.hw.security.SecurityConfig;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
 
@@ -27,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(CommentController.class)
+@Import(SecurityConfig.class)
 class CommentControllerTest {
 
     private static final long FIRST_BOOK_ID = 1L;
@@ -36,8 +41,13 @@ class CommentControllerTest {
     private static final String NEW_COMMENT_TEXT = "new comment";
     private static final String FIRST_TITLE_FOR_BOOK = "BookTitle_1";
 
+    private static final String URL_FOR_REDIRECT_SECURITY = "http://localhost/login";
+
     @Autowired
     private MockMvc mvc;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
 
     @MockBean
     private CommentService commentService;
@@ -58,6 +68,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void viewComments() throws Exception {
         when(commentService.findAllByBookId(FIRST_BOOK_ID)).thenReturn(comments);
         when(bookService.findById(FIRST_BOOK_ID))
@@ -72,6 +83,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void addComment() throws Exception {
 
         mvc.perform(post("/book/{bookId}/comments", FIRST_BOOK_ID)
@@ -83,6 +95,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void editCommentPage() throws Exception {
         when(commentService.findById(FIRST_COMMENT_ID)).thenReturn(comments.get(0));
 
@@ -95,6 +108,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void updateComment() throws Exception {
         mvc.perform(post("/book/{bookId}/comments/{id}/edit", FIRST_BOOK_ID, FIRST_COMMENT_ID)
                         .param("text", NEW_COMMENT_TEXT))
@@ -105,11 +119,31 @@ class CommentControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void deleteComment() throws Exception {
         mvc.perform(post("/book/{bookId}/comments/{id}/delete", FIRST_BOOK_ID, FIRST_COMMENT_ID))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/book/" + FIRST_BOOK_ID + "/comments"));
 
         verify(commentService, times(1)).deleteById(FIRST_COMMENT_ID);
+    }
+
+    @Test
+    void accessDeniedWithoutAuthorization() throws Exception {
+        mvc.perform(get("/book/1/comments"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
+        mvc.perform(get("/book/1/comments/1/edit"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
+        mvc.perform(post("/book/1/comments"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
+        mvc.perform(post("/book/1/comments/1/edit"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
+        mvc.perform(post("/book/1/comments/1/delete"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
     }
 }
