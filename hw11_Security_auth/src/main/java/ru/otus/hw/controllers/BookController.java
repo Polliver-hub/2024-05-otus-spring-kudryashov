@@ -2,6 +2,9 @@ package ru.otus.hw.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,6 +34,7 @@ public class BookController {
     public String indexPage(Model model) {
         List<BookDto> allBooks = bookService.findAll();
         model.addAttribute("books", allBooks);
+        model.addAttribute("role", getRole());
         return "index";
     }
 
@@ -78,5 +82,16 @@ public class BookController {
     public String deleteBook(@RequestParam("id") Long id) {
         bookService.deleteById(id);
         return "redirect:/";
+    }
+
+    private String getRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            return authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse("UNKNOWN");
+        }
+        return "UNKNOWN";
     }
 }

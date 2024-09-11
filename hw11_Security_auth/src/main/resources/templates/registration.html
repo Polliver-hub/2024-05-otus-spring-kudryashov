@@ -47,25 +47,25 @@
 <body>
 
 <div class="registration-form">
-    <h2 class="text-center">Регистрация</h2>
+    <h2 class="text-center">Registration</h2>
 
     <!-- Форма регистрации -->
     <form th:method="POST" th:action="@{/registration}" th:object="${user}">
         <div class="form-floating mb-3">
             <input type="text" class="form-control" id="username" th:field="*{username}" placeholder="Введите имя пользователя" required>
-            <label for="username">Имя пользователя</label>
+            <label for="username">Username</label>
             <div class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Username Error</div>
         </div>
 
         <div class="form-floating mb-3">
             <input type="password" class="form-control" id="password" th:field="*{password}" placeholder="Введите пароль" required>
-            <label for="password">Пароль</label>
+            <label for="password">Password</label>
             <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</div>
         </div>
 
         <!-- Кнопка регистрации -->
         <div class="d-grid">
-            <button type="submit" class="btn btn-custom btn-block">Зарегистрироваться</button>
+            <button type="submit" class="btn btn-custom btn-block">Sign up!</button>
         </div>
     </form>
 </div>

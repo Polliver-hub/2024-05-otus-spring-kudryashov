@@ -52,35 +52,35 @@
 <body>
 
 <div class="login-form">
-  <h2 class="text-center">Login</h2>
+  <h2 class="text-center">Sign in</h2>
 
   <!-- Сообщение об ошибке авторизации -->
   <div th:if="${param.error}" class="alert alert-danger">
-    Неправильные имя пользователя или пароль
+    Bad credentials!
   </div>
 
   <!-- Форма авторизации -->
   <form name="f" method="post" action="/process_login">
     <div class="form-floating mb-3">
       <input type="text" class="form-control" id="username" name="username" placeholder="Введите имя пользователя" required>
-      <label for="username">Имя пользователя</label>
+      <label for="username">Username</label>
     </div>
 
     <div class="form-floating mb-3">
       <input type="password" class="form-control" id="password" name="password" placeholder="Введите пароль" required>
-      <label for="password">Пароль</label>
+      <label for="password">Password</label>
     </div>
 
     <!-- Кнопка отправки -->
     <div class="d-grid">
-      <button type="submit" class="btn btn-custom btn-block">Войти</button>
+      <button type="submit" class="btn btn-custom btn-block">Sign in</button>
     </div>
   </form>
 
   <!-- Ссылка на страницу регистрации -->
   <div class="registration-link">
     <form th:method="GET" th:action="@{/registration}">
-      <input type="submit" class="btn btn-link" value="Регистрация"/>
+      <input type="submit" class="btn btn-link" value="Sign up"/>
     </form>
   </div>
 </div>

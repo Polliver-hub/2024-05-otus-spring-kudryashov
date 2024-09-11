@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.otus.hw.exceptions.AuthValidatorException;
 import ru.otus.hw.models.User;
 import ru.otus.hw.services.RegistrationService;
 import ru.otus.hw.utils.UserValidator;
@@ -33,21 +31,19 @@ public class AuthController {
         return "registration";
     }
 
+    @GetMapping("/admin")
+    public String adminPage() {
+        return "admin";
+    }
+
     @PostMapping("/registration")
     public String registration(@Valid @ModelAttribute("user") User user,
-                               BindingResult bindingResult, Model model) {
+                               BindingResult bindingResult) {
         userValidator.validate(user, bindingResult);
         if (bindingResult.hasErrors()) {
-            throw new AuthValidatorException(bindingResult.getFieldErrors());
+            return "registration";
         }
         registrationService.register(user);
         return "redirect:/login";
     }
-
-    @ExceptionHandler
-    private String handleException(AuthValidatorException exception) {
-//        return new ResponseEntity<>(exception.getListErrors(), HttpStatus.BAD_REQUEST);
-        return "redirect:/registration";
-    }
-
 }

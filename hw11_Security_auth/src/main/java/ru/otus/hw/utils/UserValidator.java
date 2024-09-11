@@ -27,6 +27,6 @@ public class UserValidator implements Validator {
         } catch (UsernameNotFoundException exception) {
             return;
         }
-        errors.rejectValue("username", "User с таким именем уже существует");
+        errors.rejectValue("username", "", "Username is not unique");
     }
 }
