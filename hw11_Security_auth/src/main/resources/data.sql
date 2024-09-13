@@ -22,4 +22,4 @@ values ('Comment_1_1', 1),
        ('Comment_3_2', 3);
 
 insert into users(username, password, role)
-values ('admin', '$2a$10$4cykf3l2aqNSxGkvNuudjOf5du2GWpWcZB4Q1EMVpkKR3Y67RVv9q', 'ROLE_ADMIN');
+values ('admin', '$2a$10$4cykf3l2aqNSxGkvNuudjOf5du2GWpWcZB4Q1EMVpkKR3Y67RVv9q', 'ADMIN');

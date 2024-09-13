@@ -20,7 +20,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Transactional
     public void register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(Role.ROLE_USER);
+        user.setRole(Role.USER);
         userRepository.save(user);
     }
 }

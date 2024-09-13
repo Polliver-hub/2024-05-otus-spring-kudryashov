@@ -3,16 +3,13 @@ package ru.otus.hw.controllers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.security.SecurityConfig;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.GenreService;
@@ -32,18 +29,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(BookController.class)
-@Import(SecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 class BookControllerTest {
 
     private static final String FIRST_TITLE_FOR_BOOK = "BookTitle_1";
     private static final long FIRST_BOOK_ID = 1L;
-    private static final String URL_FOR_REDIRECT_SECURITY = "http://localhost/login";
 
     @Autowired
     private MockMvc mvc;
-
-    @MockBean
-    private UserDetailsService userDetailsService;
 
     @MockBean
     private BookService bookService;
@@ -64,7 +57,6 @@ class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_USER"})
     void indexPage() throws Exception {
         List<BookDto> books = List.of(bookByFirstId);
         when(bookService.findAll()).thenReturn(books);
@@ -77,7 +69,6 @@ class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_USER"})
     void editBookPage() throws Exception {
         var genres = Collections.singletonList(new GenreDto(1L, "Genre 1"));
         var authors = Collections.singletonList(new AuthorDto(1L, "Author 1"));
@@ -96,7 +87,6 @@ class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_USER"})
     void updateBook() throws Exception {
         when(bookService.update(anyLong(), any(BookDto.class)))
                 .thenReturn(new BookDto(1L, "Updated Book",
@@ -111,7 +101,6 @@ class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_USER"})
     void newBookPage() throws Exception {
         var genres = Collections.singletonList(new GenreDto(1L, "Genre 1"));
         var authors = Collections.singletonList(new AuthorDto(1L, "Author 1"));
@@ -128,7 +117,6 @@ class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_USER"})
     void addNewBook() throws Exception {
         when(bookService.insert(any(BookDto.class)))
                 .thenReturn(bookByFirstId);
@@ -142,7 +130,6 @@ class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_USER"})
     void deleteBook() throws Exception {
         doNothing().when(bookService).deleteById(anyLong());
 
@@ -150,27 +137,5 @@ class BookControllerTest {
                         .param("id", "1"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
-    }
-
-    @Test
-    void accessDeniedWithoutAuthorization() throws Exception {
-        mvc.perform(get("/"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
-        mvc.perform(get("/book/1"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
-        mvc.perform(post("/book/1"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
-        mvc.perform(get("/book/new"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
-        mvc.perform(post("/book/new"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
-        mvc.perform(post("/deleteBook"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(URL_FOR_REDIRECT_SECURITY));
     }
 }

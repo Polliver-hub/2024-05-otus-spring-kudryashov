@@ -138,7 +138,7 @@
     </div>
 
     <!-- Admin Panel Button (Visible only for ROLE_ADMIN) -->
-    <div class="admin-button-container" th:if="${role == 'ROLE_ADMIN'}">
+    <div class="admin-button-container" th:if="${role == 'ADMIN'}">
         <form th:action="@{/admin}" th:method="GET">
             <button type="submit">Admin Panel</button>
         </form>
