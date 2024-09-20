@@ -5,7 +5,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.models.User;
-import ru.otus.hw.models.dictionary.Role;
 import ru.otus.hw.repositories.UserRepository;
 
 @Service
@@ -20,7 +19,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Transactional
     public void register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(Role.USER);
+        user.setRole("USER");
         userRepository.save(user);
     }
 }

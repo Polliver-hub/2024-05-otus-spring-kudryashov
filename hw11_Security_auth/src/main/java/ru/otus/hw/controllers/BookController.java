@@ -34,7 +34,7 @@ public class BookController {
     public String indexPage(Model model) {
         List<BookDto> allBooks = bookService.findAll();
         model.addAttribute("books", allBooks);
-        model.addAttribute("role", getRole());
+        model.addAttribute("authority", getAuthority());
         return "index";
     }
 
@@ -84,7 +84,7 @@ public class BookController {
         return "redirect:/";
     }
 
-    private String getRole() {
+    private String getAuthority() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             return authentication.getAuthorities().stream()
