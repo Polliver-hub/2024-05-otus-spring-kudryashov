@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+    .admin-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f9f9f9;
+    }
+    .admin-box {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      padding: 50px;
+      max-width: 600px;
+      margin: 0 20px;
+    }
+    h1 {
+      color: #333;
+      font-size: 36px;
+    }
+    p {
+      color: #666;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    .button-container {
+      margin-top: 30px;
+    }
+    .back-button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .back-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-container">
+  <div class="admin-box">
+    <h1>Welcome to the Admin Panel</h1>
+    <p>You have successfully accessed the administrator panel.</p>
+
+    <div class="button-container">
+      <a href="/" class="back-button">Back to Books</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
