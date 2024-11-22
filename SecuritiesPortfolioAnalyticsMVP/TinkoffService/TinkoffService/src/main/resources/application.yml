@@ -8,4 +8,3 @@ spring:
 api:
   isSandBoxMode: true
   token: ${TINKOFF_API}
-#  token: t.DrmAwL9DawjmY20Px3aMUXM_7kfywR_DlIw_zjn4Uv8LT5ACU4NOYdo4FwkTQruh73NuDVboELGVu3_PCQuILQ
