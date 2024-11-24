@@ -161,7 +161,8 @@ public class InstrumentServiceImpl implements InstrumentService {
     /**
      * Получает информацию об инструмене по тикеру.
      *
-     * <p>Для тикера отправляется запрос через соответствующий сервис Tinkoff API для получения информации об инструменте.
+     * <p>Для тикера отправляется запрос через соответствующий сервис Tinkoff API для получения информации
+     * об инструменте.
      * Это происходит n-раз асинхронно для каждого classCode из сета {@link #classCodes}.
      * Если возникает ошибка при обработке тикера, вместо объекта инструмента добавляется {@code null}.
      * Результат преобразуется в объект {@code InstrumentsDto}, содержащий список DTO инструментов.</p>
@@ -220,8 +221,8 @@ public class InstrumentServiceImpl implements InstrumentService {
     private Set<String> takeAllClassCodesByTinkoff() {
         Set<String> classCodesTinkoff = new HashSet<>();
         var allInstruments = investApi.getInstrumentsService().getAssetsSync();
-        allInstruments.forEach(asset ->
-                asset.getInstrumentsList().forEach(assetInstrument -> classCodesTinkoff.add(assetInstrument.getClassCode())));
+        allInstruments.forEach(asset -> asset.getInstrumentsList().forEach(
+                assetInstrument -> classCodesTinkoff.add(assetInstrument.getClassCode())));
         return classCodesTinkoff;
     }
 
