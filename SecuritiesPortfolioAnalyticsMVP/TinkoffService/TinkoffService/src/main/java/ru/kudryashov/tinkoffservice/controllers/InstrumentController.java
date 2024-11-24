@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.kudryashov.tinkoffservice.dto.FigisDto;
 import ru.kudryashov.tinkoffservice.dto.InstrumentDto;
+import ru.kudryashov.tinkoffservice.dto.InstrumentPriceDto;
 import ru.kudryashov.tinkoffservice.dto.InstrumentsDto;
+import ru.kudryashov.tinkoffservice.dto.InstrumentsPricesDto;
 import ru.kudryashov.tinkoffservice.dto.TickersDto;
 import ru.kudryashov.tinkoffservice.services.InstrumentService;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -39,9 +41,14 @@ public class InstrumentController {
         return ResponseEntity.ok(instrumentService.getInstrumentByFigi(figi));
     }
 
-    @GetMapping("/instruments/price/{ticker}")
-    public ResponseEntity<BigDecimal> getInstrumentPriceByTicker(@PathVariable String ticker) {
+    @GetMapping("/instruments/price/ticker/{ticker}")
+    public ResponseEntity<InstrumentPriceDto> getInstrumentPriceByTicker(@PathVariable String ticker) {
         return ResponseEntity.ok(instrumentService.getPriceByTicker(ticker));
+    }
+
+    @GetMapping("/instruments/price/figi/{figi}")
+    public ResponseEntity<InstrumentPriceDto> getInstrumentPriceByFigi(@PathVariable String figi) {
+        return ResponseEntity.ok(instrumentService.getPriceByFigi(figi));
     }
 
     @GetMapping("/instruments/stocks")
@@ -54,9 +61,19 @@ public class InstrumentController {
         return ResponseEntity.ok(instrumentService.getAllStocks(page, size));
     }
 
-    @PutMapping("/instruments")
-    public ResponseEntity<InstrumentsDto> getInstrumentsByTicker(@RequestBody TickersDto tickers) {
+    @PutMapping("/instruments/ticker")
+    public ResponseEntity<InstrumentsDto> getInstrumentsByTickers(@RequestBody TickersDto tickers) {
         return ResponseEntity.ok(instrumentService.getInstrumentsByTickers(tickers));
+    }
+
+    @PutMapping("/instruments/figi")
+    public ResponseEntity<InstrumentsDto> getInstrumentsByFigis(@RequestBody FigisDto figis) {
+        return ResponseEntity.ok(instrumentService.getInstrumentsByFigis(figis));
+    }
+
+    @PutMapping("/instruments/price/figi")
+    public ResponseEntity<InstrumentsPricesDto> getInstrumentsPricesByFigis(@RequestBody FigisDto figis) {
+        return ResponseEntity.ok(instrumentService.getPricesByFigis(figis));
     }
 
     @GetMapping("/instruments/{id}")

@@ -1,12 +1,17 @@
 package ru.kudryashov.tinkoffservice.services.impl;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.kudryashov.tinkoffservice.annotation.Profiled;
+import ru.kudryashov.tinkoffservice.dto.FigisDto;
 import ru.kudryashov.tinkoffservice.dto.InstrumentDto;
+import ru.kudryashov.tinkoffservice.dto.InstrumentPriceDto;
 import ru.kudryashov.tinkoffservice.dto.InstrumentsDto;
+import ru.kudryashov.tinkoffservice.dto.InstrumentsPricesDto;
 import ru.kudryashov.tinkoffservice.dto.TickersDto;
 import ru.kudryashov.tinkoffservice.exceptions.InstrumentException;
 import ru.kudryashov.tinkoffservice.mappers.InstrumentMapper;
@@ -15,7 +20,6 @@ import ru.tinkoff.piapi.contract.v1.Instrument;
 import ru.tinkoff.piapi.core.InvestApi;
 import ru.tinkoff.piapi.core.exception.ApiRuntimeException;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,6 +41,8 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final InvestApi investApi;
 
     private final InstrumentMapper instrumentMapper;
+
+    private Set<String> classCodes = new HashSet<>();
 
     @Override
     @Profiled
@@ -74,10 +80,9 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     @Profiled
     public List<String> getAllClassCodes() {
-        Set<String> classCodes = new HashSet<>();
-        var allInstruments = investApi.getInstrumentsService().getAssetsSync();
-        allInstruments.forEach(asset ->
-            asset.getInstrumentsList().forEach(assetInstrument -> classCodes.add(assetInstrument.getClassCode())));
+        if (classCodes.isEmpty()) {
+            return takeAllClassCodesByTinkoff().stream().toList();
+        }
         return classCodes.stream().toList();
     }
 
@@ -87,17 +92,6 @@ public class InstrumentServiceImpl implements InstrumentService {
         var instrumentsTinkoff = investApi.getInstrumentsService().findInstrumentSync(id);
         var resultList = instrumentsTinkoff.stream().map(instrumentMapper::instrumentShortToDto).toList();
         return new InstrumentsDto(resultList);
-    }
-
-    @Override
-    @Profiled
-    public InstrumentDto getInstrumentByTicker(String ticker) {
-        try {
-            var finderInstr = investApi.getInstrumentsService().getInstrumentByTickerSync(ticker, "TQBR");
-            return instrumentMapper.instrumentTinkoffToDto(finderInstr);
-        } catch (ApiRuntimeException ex) {
-            throw InstrumentException.notFoundByTicker(ticker);
-        }
     }
 
     @Override
@@ -111,27 +105,9 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
 
     @Override
-    @Profiled
-    public BigDecimal getPriceByTicker(String ticker) {
-        var figiByTicker = investApi.getInstrumentsService().getInstrumentByTickerSync(ticker, "TQBR").getFigi();
-        var lastPrice = investApi.getMarketDataService().getLastPricesSync(Collections.singleton(figiByTicker));
-        for (var price : lastPrice) {
-            var figi = price.getFigi();
-            var priceResult = quotationToBigDecimal(price.getPrice());
-            var time = timestampToString(price.getTime());
-            log.info("цены закрытия торговой сессии по инструменту {}, цена: {}, дата совершения торгов: {}",
-                    figi, priceResult, time);
-        }
-        return quotationToBigDecimal(lastPrice.getFirst().getPrice());
-    }
-
-    @Override
-    @Profiled
-    public InstrumentsDto getInstrumentsByTickers(TickersDto tickers) {
+    public InstrumentsDto getInstrumentsByFigis(FigisDto figis) {
         List<CompletableFuture<Instrument>> instruments = new ArrayList<>();
-        tickers.getTickers()
-                .forEach(ticker ->
-                        instruments.add(investApi.getInstrumentsService().getInstrumentByTicker(ticker, "TQBR")));
+        figis.getFigis().forEach(figi -> instruments.add(getInstrumentByFigiAsync(figi)));
         List<InstrumentDto> instrumentDtos = instruments.stream()
                 .map(future -> {
                     try {
@@ -147,8 +123,139 @@ public class InstrumentServiceImpl implements InstrumentService {
         return new InstrumentsDto(instrumentDtos);
     }
 
+    @Override
+    @Profiled
+    public InstrumentPriceDto getPriceByTicker(String ticker) {
+        var figiByTicker = getInstrumentByTicker(ticker).getFigi();
+        var lastPrice = investApi.getMarketDataService().getLastPricesSync(Collections.singleton(figiByTicker));
+        for (var price : lastPrice) {
+            var figi = price.getFigi();
+            var priceResult = quotationToBigDecimal(price.getPrice());
+            var time = timestampToString(price.getTime());
+            log.info("цены закрытия торговой сессии по инструменту {}, цена: {}, дата совершения торгов: {}",
+                    figi, priceResult, time);
+        }
+        return new InstrumentPriceDto(figiByTicker, quotationToBigDecimal(lastPrice.getFirst().getPrice()));
+    }
+
+    @Override
+    public InstrumentPriceDto getPriceByFigi(String figi) {
+        var lastPrice = investApi.getMarketDataService().getLastPricesSync(Collections.singleton(figi));
+        return new InstrumentPriceDto(figi, quotationToBigDecimal(lastPrice.getFirst().getPrice()));
+    }
+
+    @Override
+    @Profiled
+    public InstrumentsPricesDto getPricesByFigis(FigisDto figis) {
+        var listCompletableFuture = investApi.getMarketDataService().getLastPrices(figis.getFigis());
+        var listPrices = listCompletableFuture.join();
+        List<InstrumentPriceDto> instrumentPrices = listPrices.stream()
+                .filter(lastPrice -> isNotEmpty(lastPrice.getFigi())
+                        && isNotEmpty(lastPrice.getPrice().toString()))
+                .map(lastPrice -> new InstrumentPriceDto(lastPrice.getFigi(),
+                        quotationToBigDecimal(lastPrice.getPrice())))
+                .toList();
+        return new InstrumentsPricesDto(instrumentPrices);
+    }
+
+    /**
+     * Получает информацию об инструмене по тикеру.
+     *
+     * <p>Для тикера отправляется запрос через соответствующий сервис Tinkoff API для получения информации об инструменте.
+     * Это происходит n-раз асинхронно для каждого classCode из сета {@link #classCodes}.
+     * Если возникает ошибка при обработке тикера, вместо объекта инструмента добавляется {@code null}.
+     * Результат преобразуется в объект {@code InstrumentsDto}, содержащий список DTO инструментов.</p>
+     *
+     * @param ticker тикер
+     * @return объект {@link InstrumentDto}, содержащий найденный инструмент в формате DTO
+     * @throws InstrumentException если инструмент по тикеру не найден
+     */
+    @Override
+    @Profiled
+    public InstrumentDto getInstrumentByTicker(String ticker) {
+        List<CompletableFuture<Instrument>> instruments = new ArrayList<>();
+        for (String classCode : classCodes) {
+            instruments.add(investApi.getInstrumentsService().getInstrumentByTicker(ticker, classCode));
+        }
+        return instruments.stream()
+                .map(future -> {
+                    try {
+                        return future.join();
+                    } catch (CompletionException ex) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(instrumentMapper::instrumentTinkoffToDto)
+                .findFirst().orElseThrow(() -> InstrumentException.notFoundByTicker(ticker));
+    }
+
+    /**
+     * Получает информацию об инструментах по списку тикеров.
+     *
+     * <p>Для каждого тикера из переданного объекта {@code TickersDto} вызывается
+     * соответствующий сервис Tinkoff API для получения информации об инструменте.
+     * Если возникает ошибка при обработке тикера, вместо объекта инструмента добавляется {@code null}.
+     * Результат преобразуется в объект {@code InstrumentsDto}, содержащий список DTO инструментов.</p>
+     *
+     * @param tickers объект {@link TickersDto}, содержащий список тикеров для поиска
+     * @return объект {@link InstrumentsDto}, содержащий список найденных инструментов в формате DTO
+     * @throws InstrumentException если список тикеров пуст или не удаётся получить данные
+     */
+    @Override
+    @Profiled
+    public InstrumentsDto getInstrumentsByTickers(TickersDto tickers) {
+        List<InstrumentDto> instrumentDtos = new ArrayList<>();
+        tickers.getTickers().forEach(ticker -> {
+            try {
+                InstrumentDto instrumentDto = getInstrumentByTicker(ticker);
+                instrumentDtos.add(instrumentDto);
+            } catch (InstrumentException ex) {
+                log.warn("ticker {} not found", ticker);
+            }
+        });
+        return new InstrumentsDto(instrumentDtos);
+    }
+
+    private Set<String> takeAllClassCodesByTinkoff() {
+        Set<String> classCodesTinkoff = new HashSet<>();
+        var allInstruments = investApi.getInstrumentsService().getAssetsSync();
+        allInstruments.forEach(asset ->
+                asset.getInstrumentsList().forEach(assetInstrument -> classCodesTinkoff.add(assetInstrument.getClassCode())));
+        return classCodesTinkoff;
+    }
+
     @Async
-    public CompletableFuture<Instrument> getInstrumentAsync(String ticker) {
-        return investApi.getInstrumentsService().getInstrumentByTicker(ticker, "TQBR");
+    @Profiled
+    public CompletableFuture<Instrument> getInstrumentByFigiAsync(String figi) {
+        return investApi.getInstrumentsService().getInstrumentByFigi(figi);
+    }
+
+    /**
+     * Инициализирует поле {@code classCodes} при запуске приложения.
+     * Этот метод вызывается автоматически после создания бина Spring.
+     * Использует метод {@link #takeAllClassCodesByTinkoff()} для получения всех classCode.
+     */
+    @PostConstruct
+    private void initializeClassCodes() {
+        log.info("Initializing classCodes...");
+        this.classCodes = takeAllClassCodesByTinkoff();
+        log.info("Initialization complete. ClassCodes size: {}", classCodes.size());
+    }
+
+    /**
+     * Каждый час обновляет поле {@code classCodes}.
+     * Использует метод {@link #takeAllClassCodesByTinkoff()} для получения актуальных classCode.
+     * Этот метод выполняется автоматически благодаря аннотации {@code @Scheduled}.
+     */
+    @Scheduled(cron = "0 0 * * * ?")
+    public void refreshClassCodes() {
+        log.info("Refreshing classCodes...");
+        this.classCodes = takeAllClassCodesByTinkoff();
+        log.info("Refresh complete. ClassCodes size: {}", classCodes.size());
+    }
+
+    private static boolean isNotEmpty(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

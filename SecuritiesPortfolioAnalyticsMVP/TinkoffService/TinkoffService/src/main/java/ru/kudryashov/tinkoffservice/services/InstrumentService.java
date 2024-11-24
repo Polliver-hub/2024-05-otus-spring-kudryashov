@@ -1,10 +1,12 @@
 package ru.kudryashov.tinkoffservice.services;
 
+import ru.kudryashov.tinkoffservice.dto.FigisDto;
 import ru.kudryashov.tinkoffservice.dto.InstrumentDto;
+import ru.kudryashov.tinkoffservice.dto.InstrumentPriceDto;
 import ru.kudryashov.tinkoffservice.dto.InstrumentsDto;
+import ru.kudryashov.tinkoffservice.dto.InstrumentsPricesDto;
 import ru.kudryashov.tinkoffservice.dto.TickersDto;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface InstrumentService {
@@ -20,7 +22,13 @@ public interface InstrumentService {
 
     InstrumentDto getInstrumentByFigi(String figi);
 
-    BigDecimal getPriceByTicker(String ticker);
+    InstrumentsDto getInstrumentsByFigis(FigisDto figis);
+
+    InstrumentPriceDto getPriceByTicker(String ticker);
+
+    InstrumentPriceDto getPriceByFigi(String figi);
+
+    InstrumentsPricesDto getPricesByFigis(FigisDto figis);
 
     InstrumentsDto getInstrumentsByTickers(TickersDto tickers);
 }
