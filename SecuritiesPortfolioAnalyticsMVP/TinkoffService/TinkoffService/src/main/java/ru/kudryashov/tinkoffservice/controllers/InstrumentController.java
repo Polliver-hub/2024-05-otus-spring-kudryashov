@@ -26,32 +26,32 @@ public class InstrumentController {
 
     private final InstrumentService instrumentService;
 
-    @GetMapping("/instruments/tickers/{ticker}")
+    @GetMapping("/api/v1/instruments/tickers/{ticker}")
     public ResponseEntity<InstrumentDto> getInstrumentByTicker(@PathVariable String ticker) {
         return ResponseEntity.ok(instrumentService.getInstrumentByTicker(ticker));
     }
 
-    @GetMapping("/classCodes")
+    @GetMapping("/api/v1/classCodes")
     public ResponseEntity<List<String>> getAllClassCodesTinkoffApi() {
         return ResponseEntity.ok(instrumentService.getAllClassCodes());
     }
 
-    @GetMapping("/instruments/figis/{figi}")
+    @GetMapping("/api/v1/instruments/figis/{figi}")
     public ResponseEntity<InstrumentDto> getInstrumentByFigi(@PathVariable String figi) {
         return ResponseEntity.ok(instrumentService.getInstrumentByFigi(figi));
     }
 
-    @GetMapping("/instruments/price/ticker/{ticker}")
+    @GetMapping("/api/v1/instruments/price/ticker/{ticker}")
     public ResponseEntity<InstrumentPriceDto> getInstrumentPriceByTicker(@PathVariable String ticker) {
         return ResponseEntity.ok(instrumentService.getPriceByTicker(ticker));
     }
 
-    @GetMapping("/instruments/price/figi/{figi}")
+    @GetMapping("/api/v1/instruments/price/figi/{figi}")
     public ResponseEntity<InstrumentPriceDto> getInstrumentPriceByFigi(@PathVariable String figi) {
         return ResponseEntity.ok(instrumentService.getPriceByFigi(figi));
     }
 
-    @GetMapping("/instruments/stocks")
+    @GetMapping("/api/v1/instruments/stocks")
     public ResponseEntity<InstrumentsDto> getAllStocks(@RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "10") int size) {
         // Проверка входных параметров
@@ -61,27 +61,27 @@ public class InstrumentController {
         return ResponseEntity.ok(instrumentService.getAllStocks(page, size));
     }
 
-    @PutMapping("/instruments/ticker")
+    @PutMapping("/api/v1/instruments/tickers")
     public ResponseEntity<InstrumentsDto> getInstrumentsByTickers(@RequestBody TickersDto tickers) {
         return ResponseEntity.ok(instrumentService.getInstrumentsByTickers(tickers));
     }
 
-    @PutMapping("/instruments/figi")
+    @PutMapping("/api/v1/instruments/figis")
     public ResponseEntity<InstrumentsDto> getInstrumentsByFigis(@RequestBody FigisDto figis) {
         return ResponseEntity.ok(instrumentService.getInstrumentsByFigis(figis));
     }
 
-    @PutMapping("/instruments/price/figi")
+    @PutMapping("/api/v1/instruments/prices/figi")
     public ResponseEntity<InstrumentsPricesDto> getInstrumentsPricesByFigis(@RequestBody FigisDto figis) {
         return ResponseEntity.ok(instrumentService.getPricesByFigis(figis));
     }
 
-    @GetMapping("/instruments/{id}")
+    @GetMapping("/api/v1/instruments/{id}")
     public ResponseEntity<InstrumentsDto> getInstrumentsById(@PathVariable String id) {
         return ResponseEntity.ok(instrumentService.getInstrumentsById(id));
     }
 
-    @GetMapping("/instruments")
+    @GetMapping("/api/v1/instruments")
     public ResponseEntity<InstrumentsDto> getAllInstruments(@RequestParam(defaultValue = "0") int page,
                                                             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(instrumentService.getAllInstruments(page, size));
