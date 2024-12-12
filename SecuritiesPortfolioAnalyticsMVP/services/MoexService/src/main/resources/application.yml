@@ -1,0 +1,17 @@
+server:
+  port: 8005
+
+moex:
+  url:
+    "https://iss.moex.com/"
+
+spring:
+  cache:
+    caffeine:
+      spec: maximumSize=48,expireAfterAccess=1h
+
+logging:
+  level:
+    com.victorlevin.CurrencyCbrService.cbrclient: INFO
+  file:
+    name: logs/MoexService.log
